@@ -1,5 +1,5 @@
 /**
- * African Savannah: a first spatial model with lions moving at random.
+ * African Savannah: a spatial model with lions hunting zebras on a growing grassland.
  */
 model African_Savannah_2
 
@@ -98,7 +98,7 @@ grid grass_cell width: 100 height: 100 {
 	}
 }
 
-// GUI experiment that shows the lions on a map
+// GUI experiment that shows the grassland, lions and zebras on a map, with a zebra counter
 experiment savannah type: gui {
 	output {
 		// Shows how many zebras are still alive
