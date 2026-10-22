@@ -40,9 +40,9 @@ species lion skills: [moving] {
 		}
 	}
 
-	// Draws the lion as an orange circle (circle() takes a radius, so half the diameter)
+	// Draws the lion as an orange circle with a thin black outline (circle() takes a radius, so half the diameter)
 	aspect default {
-		draw circle(size / 2) color: color;
+		draw circle(size / 2) color: color border: #black;
 	}
 }
 
@@ -60,10 +60,41 @@ species zebra skills: [moving] {
 		do wander amplitude: wander_amplitude;
 	}
 
-	// Draws the zebra as a grey triangle pointing up; triangle() takes the side length,
-	// and an equilateral triangle in a circle of diameter d has side d / 2 * sqrt(3)
+	// Draws the zebra as a grey triangle pointing up with a thin black outline; triangle() takes
+	// the side length, and an equilateral triangle in a circle of diameter d has side d / 2 * sqrt(3)
 	aspect default {
-		draw triangle(size / 2 * sqrt(3)) color: color;
+		draw triangle(size / 2 * sqrt(3)) color: color border: #black;
+	}
+}
+
+// Grassland of the savannah, modelled as a cellular automaton (1 m x 1 m cells)
+grid grass_cell width: 100 height: 100 {
+	// Grass biomass in the cell, in kg (random start value between 0 and 10)
+	float biomass <- rnd(10.0);
+	// Grass added to the cell each time step, in kg (linear growth)
+	float growth_rate <- 0.1;
+	// Cell colour, from dry brown (0 kg) to dark green (10 kg or more)
+	rgb color <- biomass_color();
+
+	// Each step, the grass grows by a fixed amount and the cell colour is updated
+	reflex grow {
+		biomass <- biomass + growth_rate;
+		color <- biomass_color();
+	}
+
+	// Returns the colour for the current biomass, using pale tones so the animals stay visible:
+	// light sand-brown -> pale yellow -> very light green -> sage green
+	rgb biomass_color {
+		list<rgb> scale <- [rgb(205, 185, 150), rgb(240, 230, 170), rgb(200, 230, 180), rgb(140, 185, 120)];
+		// Position of the biomass on the colour scale (0 to 3)
+		float pos <- min(biomass, 10.0) / 10.0 * (length(scale) - 1);
+		// Lower colour of the two colours to blend between
+		int i <- min(int(pos), length(scale) - 2);
+		// Share of the upper colour (0 to 1)
+		float t <- pos - i;
+		rgb c1 <- scale[i];
+		rgb c2 <- scale[i + 1];
+		return rgb(int(c1.red + (c2.red - c1.red) * t), int(c1.green + (c2.green - c1.green) * t), int(c1.blue + (c2.blue - c1.blue) * t));
 	}
 }
 
@@ -75,6 +106,8 @@ experiment savannah type: gui {
 
 		// Map display of the savannah
 		display savannah_map {
+			// Grassland drawn first so the animals appear on top
+			grid grass_cell;
 			species zebra aspect: default;
 			species lion aspect: default;
 		}
