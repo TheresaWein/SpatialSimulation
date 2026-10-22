@@ -30,6 +30,16 @@ species lion skills: [moving] {
 		do wander amplitude: wander_amplitude;
 	}
 
+	// Each step, the lion kills one zebra it touches (circles around both animals overlap)
+	reflex hunt {
+		zebra prey <- (zebra where (each distance_to self <= (size + each.size) / 2)) closest_to self;
+		if (prey != nil) {
+			ask prey {
+				do die;
+			}
+		}
+	}
+
 	// Draws the lion as an orange circle (circle() takes a radius, so half the diameter)
 	aspect default {
 		draw circle(size / 2) color: color;
@@ -60,6 +70,9 @@ species zebra skills: [moving] {
 // GUI experiment that shows the lions on a map
 experiment savannah type: gui {
 	output {
+		// Shows how many zebras are still alive
+		monitor "Number of zebras" value: length(zebra);
+
 		// Map display of the savannah
 		display savannah_map {
 			species zebra aspect: default;
