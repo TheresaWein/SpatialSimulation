@@ -8,6 +8,8 @@ global {
 	int nb_lions <- 20;
 	// Number of zebras created at the start of the simulation
 	int nb_zebras <- 20;
+	// Energy each lion has at the start of the simulation (adjustable with a slider)
+	float lion_start_energy <- 50.0;
 
 	// Create the lions and zebras when the simulation starts
 	init {
@@ -24,20 +26,34 @@ species lion skills: [moving] {
 	rgb color <- #orange;
 	// Maximum change of direction per step, in degrees (smaller = smoother path)
 	float wander_amplitude <- 25.0;
+	// Current energy of the lion
+	float energy <- lion_start_energy;
+	// Energy gained from eating one zebra
+	float energy_per_zebra <- 5.0;
+	// Energy lost per step when moving
+	float energy_loss <- 0.1;
 
-	// Each step, the lion moves forward, turning slightly at random
+	// Each step, the lion moves forward, turning slightly at random, and loses energy
 	reflex wander {
 		do wander amplitude: wander_amplitude;
+		energy <- energy - energy_loss;
 	}
 
 	// Each step, the lion kills one zebra it touches (circles around both animals overlap)
+	// and gains energy from eating it
 	reflex hunt {
 		zebra prey <- (zebra where (each distance_to self <= (size + each.size) / 2)) closest_to self;
 		if (prey != nil) {
 			ask prey {
 				do die;
 			}
+			energy <- energy + energy_per_zebra;
 		}
+	}
+
+	// The lion dies when it has no energy left (checked after hunting, so a last catch can save it)
+	reflex starve when: energy <= 0 {
+		do die;
 	}
 
 	// Draws the lion as an orange circle with a thin black outline (circle() takes a radius, so half the diameter)
@@ -109,11 +125,18 @@ grid grass_cell width: 100 height: 100 {
 	}
 }
 
-// GUI experiment that shows the grassland, lions and zebras on a map, with a zebra counter
+// GUI experiment that shows the grassland, lions and zebras on a map, with zebra and lion counters and the lions' average energy
 experiment savannah type: gui {
+	// Slider to choose the lions' start energy before the simulation starts
+	parameter "Lion start energy" var: lion_start_energy min: 5.0 max: 60.0 step: 1.0 category: "Lions";
+
 	output {
 		// Shows how many zebras are still alive
 		monitor "Number of zebras" value: length(zebra);
+		// Shows how many lions are still alive
+		monitor "Number of lions" value: length(lion);
+		// Shows the average energy of the living lions (0 when no lion is left)
+		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy);
 
 		// Map display of the savannah
 		display savannah_map {
