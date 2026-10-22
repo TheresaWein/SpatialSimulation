@@ -54,10 +54,19 @@ species zebra skills: [moving] {
 	rgb color <- #grey;
 	// Maximum change of direction per step, in degrees (same value as the lions)
 	float wander_amplitude <- 25.0;
+	// Grass eaten per step, in kg
+	float consumption <- 2.0;
 
 	// Each step, the zebra moves forward, turning slightly at random
 	reflex wander {
 		do wander amplitude: wander_amplitude;
+	}
+
+	// Each step, the zebra eats grass from the cell it is standing on (never more than is there)
+	reflex eat {
+		grass_cell my_cell <- grass_cell(location);
+		float eaten <- min(consumption, my_cell.biomass);
+		my_cell.biomass <- my_cell.biomass - eaten;
 	}
 
 	// Draws the zebra as a grey triangle pointing up with a thin black outline; triangle() takes
@@ -73,12 +82,14 @@ grid grass_cell width: 100 height: 100 {
 	float biomass <- rnd(10.0);
 	// Grass added to the cell each time step, in kg (linear growth)
 	float growth_rate <- 0.1;
+	// Maximum grass biomass a cell can hold, in kg
+	float max_biomass <- 10.0;
 	// Cell colour, from dry brown (0 kg) to dark green (10 kg or more)
 	rgb color <- biomass_color();
 
-	// Each step, the grass grows by a fixed amount and the cell colour is updated
+	// Each step, the grass grows by a fixed amount up to the maximum and the cell colour is updated
 	reflex grow {
-		biomass <- biomass + growth_rate;
+		biomass <- min(biomass + growth_rate, max_biomass);
 		color <- biomass_color();
 	}
 
