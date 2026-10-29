@@ -12,6 +12,8 @@ global {
 	float lion_start_energy <- 50.0;
 	// List of the ages of all living lions, in time steps (filled later)
 	list<int> lion_ages <- [];
+	// Mean age of the lions at which they are drawn fully dark red (above it they stay dark red)
+	float max_mean_age_color <- 100.0;
 
 	// Create the lions and zebras when the simulation starts
 	init {
@@ -20,6 +22,22 @@ global {
 		// Add the age of every lion to the list
 		loop l over: lion {
 			add l.age to: lion_ages;
+		}
+		// Give all lions the red shade of the start mean age
+		do color_lions;
+	}
+
+	// Gives all lions the same shade of red according to the mean age in lion_ages:
+	// light red (mean age 0) -> dark red (mean age max_mean_age_color or more)
+	action color_lions {
+		// Mean age in the list (0 when the list is empty)
+		float age_mean <- empty(lion_ages) ? 0.0 : mean(lion_ages);
+		// Share of the dark red colour (0 to 1)
+		float t <- min(age_mean, max_mean_age_color) / max_mean_age_color;
+		// Blend from light red rgb(255, 200, 200) to dark red rgb(120, 0, 0)
+		rgb shade <- rgb(int(255 + (120 - 255) * t), int(200 - 200 * t), int(200 - 200 * t));
+		ask lion {
+			color <- shade;
 		}
 	}
 
@@ -39,6 +57,9 @@ global {
 		float age_mean <- empty(lion_ages) ? 0.0 : mean(lion_ages) with_precision 1;
 		int age_max <- empty(lion_ages) ? 0 : max(lion_ages);
 		write "Step " + cycle + ": " + nb_ages + " lions, age min " + age_min + ", mean " + age_mean + ", max " + age_max;
+
+		// Update the lions' red shade to the new mean age
+		do color_lions;
 	}
 }
 
@@ -46,8 +67,8 @@ global {
 species lion skills: [moving] {
 	// Diameter of the lion's circle
 	float size <- 3.0;
-	// Colour used to draw the lion
-	rgb color <- #orange;
+	// Colour used to draw the lion (a shade of red set by the global action color_lions)
+	rgb color <- rgb(255, 200, 200);
 	// Maximum change of direction per step, in degrees (smaller = smoother path)
 	float wander_amplitude <- 25.0;
 	// Current energy of the lion
@@ -87,7 +108,7 @@ species lion skills: [moving] {
 		do die;
 	}
 
-	// Draws the lion as an orange circle with a thin black outline (circle() takes a radius, so half the diameter)
+	// Draws the lion as a red circle (shade set by the mean age) with a thin black outline (circle() takes a radius, so half the diameter)
 	aspect default {
 		draw circle(size / 2) color: color border: #black;
 	}
@@ -156,7 +177,8 @@ grid grass_cell width: 100 height: 100 {
 	}
 }
 
-// GUI experiment that shows the grassland, lions and zebras on a map, with zebra and lion counters and the lions' average energy
+// GUI experiment that shows the grassland, lions and zebras on a map, with zebra and lion counters, the lions' average energy
+// and the number, minimum, mean and maximum of the lion ages in the list
 experiment savannah type: gui {
 	// Slider to choose the lions' start energy before the simulation starts
 	parameter "Lion start energy" var: lion_start_energy min: 5.0 max: 60.0 step: 1.0 category: "Lions";
