@@ -87,8 +87,15 @@ species lion skills: [moving] {
 		age <- age + 1;
 	}
 
-	// The lion dies of old age when it is older than max_age
+	// The lion dies of old age when it is older than max_age; just before, it gives birth to one baby lion
 	reflex die_of_old_age when: age > max_age {
+		// Create one baby lion at the old lion's place, with age 0 and the current red shade of the population
+		// (energy is the start energy lion_start_energy, like every new lion)
+		create lion number: 1 {
+			location <- myself.location;
+			age <- 0;
+			color <- myself.color;
+		}
 		do die;
 	}
 
@@ -118,6 +125,8 @@ species lion skills: [moving] {
 	// Draws the lion as a red circle (shade set by the mean age) with a thin black outline (circle() takes a radius, so half the diameter)
 	aspect default {
 		draw circle(size / 2) color: color border: #black;
+		// Writes the lion's current age next to its circle
+		draw string(age) color: #black font: font("Arial", 10, #bold) at: location + {1.5, -1.5};
 	}
 }
 
@@ -198,7 +207,7 @@ experiment savannah type: gui {
 		// Shows the average energy of the living lions (0 when no lion is left)
 		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy);
 		// Shows how many values the list of lion ages contains
-		monitor "Number of ages" value: length(lion_ages);
+		monitor "Number of lions in age list" value: length(lion_ages);
 		// Shows the lowest age in the list (0 when the list is empty)
 		monitor "Min age" value: empty(lion_ages) ? 0 : min(lion_ages);
 		// Shows the mean age in the list, rounded to 1 decimal (0 when the list is empty)
