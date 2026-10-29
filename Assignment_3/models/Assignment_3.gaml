@@ -17,6 +17,20 @@ global {
 	init {
 		create lion number: nb_lions;
 		create zebra number: nb_zebras;
+		// Add the age of every lion to the list
+		loop l over: lion {
+			add l.age to: lion_ages;
+		}
+	}
+
+	// Each step, remove the previous age values and add the current age of every living lion.
+	// The global reflex runs before the lions' reflexes, so the list shows the ages at the start
+	// of the step (one step behind the lions' age, and lions that starve in this step are still in it)
+	reflex update_lion_ages {
+		remove all: lion_ages from: lion_ages;
+		loop l over: lion {
+			add l.age to: lion_ages;
+		}
 	}
 }
 
@@ -34,6 +48,13 @@ species lion skills: [moving] {
 	float energy_per_zebra <- 5.0;
 	// Energy lost per step when moving
 	float energy_loss <- 0.1;
+	// Age of the lion, in time steps (random start age between 0 and 60)
+	int age <- rnd(0, 60);
+
+	// Each step, the lion gets one time step older
+	reflex grow_older {
+		age <- age + 1;
+	}
 
 	// Each step, the lion moves forward, turning slightly at random, and loses energy
 	reflex wander {
