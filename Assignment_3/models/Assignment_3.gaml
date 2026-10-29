@@ -10,10 +10,12 @@ global {
 	int nb_zebras <- 20;
 	// Energy each lion has at the start of the simulation (adjustable with a slider)
 	float lion_start_energy <- 50.0;
-	// List of the ages of all living lions, in time steps (filled later)
+	// List of the ages of all living lions, in years (1 time step = 1 year)
 	list<int> lion_ages <- [];
-	// Mean age of the lions at which they are drawn fully dark red (above it they stay dark red)
-	float max_mean_age_color <- 100.0;
+	// Maximum age of a lion, in years (1 time step = 1 year); older lions die
+	int max_age <- 60;
+	// Mean age of the lions at which they are drawn fully dark red (the maximum age of a lion)
+	float max_mean_age_color <- float(max_age);
 
 	// Create the lions and zebras when the simulation starts
 	init {
@@ -43,7 +45,7 @@ global {
 
 	// Each step, remove the previous age values and add the current age of every living lion.
 	// The global reflex runs before the lions' reflexes, so the list shows the ages at the start
-	// of the step (one step behind the lions' age, and lions that starve in this step are still in it)
+	// of the step (one step behind the lions' age, and lions that die in this step are still in it)
 	reflex update_lion_ages {
 		remove all: lion_ages from: lion_ages;
 		loop l over: lion {
@@ -77,12 +79,17 @@ species lion skills: [moving] {
 	float energy_per_zebra <- 5.0;
 	// Energy lost per step when moving
 	float energy_loss <- 0.1;
-	// Age of the lion, in time steps (random start age between 0 and 60)
+	// Age of the lion, in years (1 time step = 1 year; random start age between 0 and 60)
 	int age <- rnd(0, 60);
 
-	// Each step, the lion gets one time step older
+	// Each step, the lion gets one year older
 	reflex grow_older {
 		age <- age + 1;
+	}
+
+	// The lion dies of old age when it is older than max_age
+	reflex die_of_old_age when: age > max_age {
+		do die;
 	}
 
 	// Each step, the lion moves forward, turning slightly at random, and loses energy
