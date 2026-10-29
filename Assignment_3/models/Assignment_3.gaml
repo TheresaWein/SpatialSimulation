@@ -31,6 +31,14 @@ global {
 		loop l over: lion {
 			add l.age to: lion_ages;
 		}
+
+		// Report the number of values in the list and their minimum, mean (rounded to 1 decimal) and maximum
+		// in the console; all values are 0 when the list is empty (no lions left)
+		int nb_ages <- length(lion_ages);
+		int age_min <- empty(lion_ages) ? 0 : min(lion_ages);
+		float age_mean <- empty(lion_ages) ? 0.0 : mean(lion_ages) with_precision 1;
+		int age_max <- empty(lion_ages) ? 0 : max(lion_ages);
+		write "Step " + cycle + ": " + nb_ages + " lions, age min " + age_min + ", mean " + age_mean + ", max " + age_max;
 	}
 }
 
@@ -160,6 +168,14 @@ experiment savannah type: gui {
 		monitor "Number of lions" value: length(lion);
 		// Shows the average energy of the living lions (0 when no lion is left)
 		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy);
+		// Shows how many values the list of lion ages contains
+		monitor "Number of ages" value: length(lion_ages);
+		// Shows the lowest age in the list (0 when the list is empty)
+		monitor "Min age" value: empty(lion_ages) ? 0 : min(lion_ages);
+		// Shows the mean age in the list, rounded to 1 decimal (0 when the list is empty)
+		monitor "Mean age" value: empty(lion_ages) ? 0.0 : mean(lion_ages) with_precision 1;
+		// Shows the highest age in the list (0 when the list is empty)
+		monitor "Max age" value: empty(lion_ages) ? 0 : max(lion_ages);
 
 		// Map display of the savannah
 		display savannah_map {
