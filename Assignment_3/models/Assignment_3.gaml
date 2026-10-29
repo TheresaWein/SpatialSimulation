@@ -10,6 +10,8 @@ global {
 	int nb_zebras <- 20;
 	// Energy each lion has at the start of the simulation (adjustable with a slider)
 	float lion_start_energy <- 50.0;
+	// List of the ages of all living lions, in time steps (filled later)
+	list<int> lion_ages <- [];
 
 	// Create the lions and zebras when the simulation starts
 	init {
