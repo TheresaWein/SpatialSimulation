@@ -6,8 +6,6 @@ model Assignment_4
 global {
 	// Shape of the world: a square of 25 m x 25 m, small enough to show the action neighbourhoods at true scale
 	geometry shape <- square(25);
-	// Half the thickness of the arrow lines of the action neighbourhoods, in m (display only)
-	float arrow_half_width <- 0.04;
 	// Number of cows created at the start of the simulation
 	int nb_cows <- 5;
 	// Number of sheep created at the start of the simulation
@@ -58,6 +56,8 @@ species sheep skills: [moving] {
 	float south_heading <- 90.0;
 	// Diameter of the sheep's circle
 	float size <- 0.5;
+	// Half the thickness of the sheep's arrow line, in m (display only)
+	float arrow_half_width <- 0.04;
 	// Colour used to draw the sheep
 	rgb color <- #black;
 
@@ -89,6 +89,8 @@ species goat skills: [moving] {
 	point target_location <- {0, 0};
 	// Side length of the goat's triangle
 	float size <- 0.5;
+	// Half the thickness of the goat's arrow line, in m (display only)
+	float arrow_half_width <- 0.04;
 	// Colour used to draw the goat
 	rgb color <- #yellow;
 
