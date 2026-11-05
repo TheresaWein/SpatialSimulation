@@ -63,12 +63,21 @@ species sheep skills: [moving] {
 	}
 }
 
-// A yellow goat, drawn as a triangle
-species goat {
+// A yellow goat, drawn as a triangle, that walks slowly towards the origin
+species goat skills: [moving] {
+	// Speed of the goat, in m/s (0.5 m per step with GAMA's default step of 1 s)
+	float speed <- 0.5;
+	// Location the goat walks to (the origin of the world)
+	point target_location <- {0, 0};
 	// Side length of the goat's triangle
 	float size <- 3.0;
 	// Colour used to draw the goat
 	rgb color <- #yellow;
+
+	// Each step, the goat moves straight towards its target; it stays there once it arrives
+	reflex walk {
+		do goto target: target_location;
+	}
 
 	// Draws the goat as a yellow triangle with a thin black outline
 	aspect default {
