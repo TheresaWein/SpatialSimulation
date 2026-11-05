@@ -19,12 +19,21 @@ global {
 	}
 }
 
-// A brown cow, drawn as a square
-species cow {
+// A brown cow, drawn as a square, that moves with a correlated random walk
+species cow skills: [moving] {
+	// Speed of the cow, in m/s (2 m per step with GAMA's default step of 1 s)
+	float speed <- 2.0;
+	// Total range of the cow's change of direction per step, in degrees (up to 45 to each side)
+	float turning_amplitude <- 90.0;
 	// Side length of the cow's square
 	float size <- 3.0;
 	// Colour used to draw the cow (an earthy brown, because GAMA's #brown looks red)
 	rgb color <- rgb(139, 90, 43);
+
+	// Each step, the cow moves forward and picks a new direction close to its current one
+	reflex walk {
+		do wander amplitude: turning_amplitude;
+	}
 
 	// Draws the cow as a brown square with a thin black outline
 	aspect default {
