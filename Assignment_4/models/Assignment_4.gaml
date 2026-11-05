@@ -41,12 +41,21 @@ species cow skills: [moving] {
 	}
 }
 
-// A black sheep, drawn as a circle
-species sheep {
+// A black sheep, drawn as a circle, that walks straight south
+species sheep skills: [moving] {
+	// Speed of the sheep, in m/s (1 m per step with GAMA's default step of 1 s)
+	float speed <- 1.0;
+	// Direction of the sheep's walk, in degrees (0 = east, 90 = south)
+	float south_heading <- 90.0;
 	// Diameter of the sheep's circle
 	float size <- 3.0;
 	// Colour used to draw the sheep
 	rgb color <- #black;
+
+	// Each step, the sheep moves one step south; it stays at the south border once it gets there
+	reflex walk {
+		do move heading: south_heading;
+	}
 
 	// Draws the sheep as a black circle with a thin black outline (circle() takes a radius, so half the diameter)
 	aspect default {
