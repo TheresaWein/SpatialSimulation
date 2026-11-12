@@ -93,10 +93,15 @@ species goat skills: [moving] {
 	float arrow_half_width <- 0.04;
 	// Colour used to draw the goat
 	rgb color <- #yellow;
+	// Total distance the goat has travelled since the start of the simulation, in m
+	float distance_travelled <- 0.0;
 
-	// Each step, the goat moves straight towards its target; it stays there once it arrives
+	// Each step, the goat moves straight towards its target and adds the distance it moved to its total; it stays there once it arrives
 	reflex walk {
+		// Location of the goat before this step's move
+		point previous_location <- location;
 		do goto target: target_location;
+		distance_travelled <- distance_travelled + (previous_location distance_to location);
 	}
 
 	// Draws the goat's action neighbourhood and the goat as a yellow triangle with a thin black outline
@@ -128,6 +133,12 @@ experiment farm type: gui {
 			species cow aspect: default;
 			species sheep aspect: default;
 			species goat aspect: default;
+		}
+		// Time series chart of the mean total distance travelled by the goats, in m (2d display, as GAMA recommends for charts)
+		display goat_distance_chart type: 2d {
+			chart "Mean total distance travelled by goats" type: series {
+				data "Mean distance (m)" value: goat mean_of each.distance_travelled;
+			}
 		}
 	}
 }
