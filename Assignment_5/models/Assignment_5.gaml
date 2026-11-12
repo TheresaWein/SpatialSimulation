@@ -31,10 +31,17 @@ species cow skills: [moving] {
 	float size <- 0.5;
 	// Colour used to draw the cow (an earthy brown, because GAMA's #brown looks red)
 	rgb color <- rgb(139, 90, 43);
+	// Distance the cow moved in the first step of the simulation, in m (stays fixed afterwards)
+	float first_step_distance <- 0.0;
 
-	// Each step, the cow moves forward and picks a new direction close to its current one
+	// Each step, the cow moves forward and picks a new direction close to its current one; in the first step it also records the distance it moved
 	reflex walk {
+		// Location of the cow before this step's move
+		point previous_location <- location;
 		do wander amplitude: turning_amplitude;
+		if (cycle = 0) {
+			first_step_distance <- previous_location distance_to location;
+		}
 	}
 
 	// Draws the cow's action neighbourhood and the cow as a brown square with a thin black outline
@@ -60,10 +67,17 @@ species sheep skills: [moving] {
 	float arrow_half_width <- 0.04;
 	// Colour used to draw the sheep
 	rgb color <- #black;
+	// Distance the sheep moved in the first step of the simulation, in m (stays fixed afterwards)
+	float first_step_distance <- 0.0;
 
-	// Each step, the sheep moves south; the last step is shortened so it ends exactly on the south border and stays there
+	// Each step, the sheep moves south; in the first step it also records the distance it moved; the last step is shortened so it ends exactly on the south border and stays there
 	reflex walk {
+		// Location of the sheep before this step's move
+		point previous_location <- location;
 		do move heading: south_heading speed: min(speed, (world.shape.height - location.y) / step);
+		if (cycle = 0) {
+			first_step_distance <- previous_location distance_to location;
+		}
 	}
 
 	// Draws the sheep's action neighbourhood and the sheep as a black circle with a thin black outline (circle() takes a radius, so half the diameter)
@@ -138,6 +152,13 @@ experiment farm type: gui {
 		display goat_distance_chart type: 2d {
 			chart "Mean total distance travelled by goats" type: series {
 				data "Mean distance (m)" value: goat mean_of each.distance_travelled;
+			}
+		}
+		// Scatter plot of the mean distance moved in the first step, in m: one point for the sheep and one for the cows at x = step 1, without connecting lines; no data before the first step, so no extra points at 0; x-axis from 0 to 3 with a tick at every whole step
+		display sheep_vs_cows_chart type: 2d {
+			chart "Mean distance moved in the first step: sheep vs cows" type: scatter x_label: "Timestep" y_label: "Distance (m)" x_range: {0, 3} x_tick_unit: 1 {
+				data "Sheep" value: cycle = 0 ? [] : [{1, sheep mean_of each.first_step_distance}] line_visible: false;
+				data "Cows" value: cycle = 0 ? [] : [{1, cow mean_of each.first_step_distance}] line_visible: false;
 			}
 		}
 	}
