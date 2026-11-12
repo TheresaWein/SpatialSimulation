@@ -45,11 +45,7 @@ species cow skills: [moving] {
 		do wander amplitude: turning_amplitude;
 		// Change of direction in this step, in degrees, brought into the range -180 to 180 (e.g. a turn from 350° to 10° counts as +20°, not -340°)
 		float direction_change <- heading - previous_heading;
-		if (direction_change > 180) {
-			direction_change <- direction_change - 360;
-		} else if (direction_change < -180) {
-			direction_change <- direction_change + 360;
-		}
+		direction_change <- direction_change > 180 ? direction_change - 360 : (direction_change < -180 ? direction_change + 360 : direction_change);
 		add direction_change to: cow_direction_changes;
 		if (cycle = 0) {
 			first_step_distance <- previous_location distance_to location;
