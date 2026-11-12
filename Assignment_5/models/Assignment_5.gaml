@@ -119,6 +119,8 @@ species goat skills: [moving] {
 // GUI experiment that shows the farm animals on a map
 experiment farm type: gui {
 	output {
+		// Monitor showing, for each goat, the distance left to its target, in m, rounded to 2 decimals (one value per goat, in the order the goats were created)
+		monitor "Distance left per goat (m)" value: goat collect ((each.location distance_to each.target_location) with_precision 2);
 		// Map display of the farm on a soft green background (dark enough for the yellow goat arrows to stand out)
 		display farm_map background: rgb(180, 210, 160) {
 			species cow aspect: default;
