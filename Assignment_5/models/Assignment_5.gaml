@@ -176,9 +176,14 @@ experiment farm type: gui {
 		// Histogram of all cow direction changes so far: a "< -45°" bin on the left and a "> 45°" bin on the right in a lighter brown for changes beyond the turning range (e.g. turns at the map border), with 18 bins of 5° from -45° to 45° in the cows' brown in between
 		display cow_turning_histogram type: 2d {
 			chart "Distribution of cow direction changes" type: histogram x_label: "Direction change (°)" y_label: "Count" {
-				datalist ["< -45°"] + list<string>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "legend") + ["> 45°"]
-					value: [cow_direction_changes count (each < -45)] + list<int>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "values") + [cow_direction_changes count (each > 45)]
-					color: [rgb(190, 140, 90)] + list_with(18, rgb(139, 90, 43)) + [rgb(190, 140, 90)];
+				// Bin on the left for all direction changes below -45°, in light brown
+				data "< -45°" value: cow_direction_changes count (each < -45) color: rgb(190, 140, 90);
+				// 18 bins of 5° from -45° to 45°, in the cows' brown
+				datalist list<string>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "legend")
+					value: list<int>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "values")
+					color: list_with(18, rgb(139, 90, 43));
+				// Bin on the right for all direction changes above 45°, in light brown
+				data "> 45°" value: cow_direction_changes count (each > 45) color: rgb(190, 140, 90);
 			}
 		}
 	}
