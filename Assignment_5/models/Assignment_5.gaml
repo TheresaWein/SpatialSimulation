@@ -12,6 +12,8 @@ global {
 	int nb_sheep <- 3;
 	// Number of goats created at the start of the simulation
 	int nb_goats <- 2;
+	// Data pool of all cow direction changes so far, in degrees (each cow adds one value per step; negative = left turn, positive = right turn)
+	list<float> cow_direction_changes <- [];
 
 	// Create the animals once, when the simulation starts
 	init {
@@ -34,11 +36,21 @@ species cow skills: [moving] {
 	// Distance the cow moved in the first step of the simulation, in m (stays fixed afterwards)
 	float first_step_distance <- 0.0;
 
-	// Each step, the cow moves forward and picks a new direction close to its current one; in the first step it also records the distance it moved
+	// Each step, the cow moves forward and picks a new direction close to its current one; it adds its direction change to the global data pool, and in the first step it also records the distance it moved
 	reflex walk {
 		// Location of the cow before this step's move
 		point previous_location <- location;
+		// Heading of the cow before this step's move, in degrees
+		float previous_heading <- heading;
 		do wander amplitude: turning_amplitude;
+		// Change of direction in this step, in degrees, brought into the range -180 to 180 (e.g. a turn from 350° to 10° counts as +20°, not -340°)
+		float direction_change <- heading - previous_heading;
+		if (direction_change > 180) {
+			direction_change <- direction_change - 360;
+		} else if (direction_change < -180) {
+			direction_change <- direction_change + 360;
+		}
+		add direction_change to: cow_direction_changes;
 		if (cycle = 0) {
 			first_step_distance <- previous_location distance_to location;
 		}
@@ -159,6 +171,14 @@ experiment farm type: gui {
 			chart "Mean distance moved in the first step: sheep vs cows" type: scatter x_label: "Timestep" y_label: "Distance (m)" x_range: {0, 3} x_tick_unit: 1 {
 				data "Sheep" value: cycle = 0 ? [] : [{1, sheep mean_of each.first_step_distance}] line_visible: false;
 				data "Cows" value: cycle = 0 ? [] : [{1, cow mean_of each.first_step_distance}] line_visible: false;
+			}
+		}
+		// Histogram of all cow direction changes so far: a "< -45°" bin on the left and a "> 45°" bin on the right in a lighter brown for changes beyond the turning range (e.g. turns at the map border), with 18 bins of 5° from -45° to 45° in the cows' brown in between
+		display cow_turning_histogram type: 2d {
+			chart "Distribution of cow direction changes" type: histogram x_label: "Direction change (°)" y_label: "Count" {
+				datalist ["< -45°"] + list<string>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "legend") + ["> 45°"]
+					value: [cow_direction_changes count (each < -45)] + list<int>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "values") + [cow_direction_changes count (each > 45)]
+					color: [rgb(190, 140, 90)] + list_with(18, rgb(139, 90, 43)) + [rgb(190, 140, 90)];
 			}
 		}
 	}
