@@ -121,6 +121,8 @@ experiment farm type: gui {
 	output {
 		// Monitor showing, for each goat, the distance left to its target, in m, rounded to 2 decimals (one value per goat, in the order the goats were created)
 		monitor "Distance left per goat (m)" value: goat collect ((each.location distance_to each.target_location) with_precision 2);
+		// Monitor showing how many sheep have reached the south border and therefore stopped moving
+		monitor "Sheep stopped at the south border" value: sheep count (each.location.y >= world.shape.height);
 		// Map display of the farm on a soft green background (dark enough for the yellow goat arrows to stand out)
 		display farm_map background: rgb(180, 210, 160) {
 			species cow aspect: default;
