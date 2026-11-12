@@ -174,9 +174,9 @@ experiment farm type: gui {
 			chart "Distribution of cow direction changes" type: histogram x_label: "Direction change (°)" y_label: "Count" {
 				// Bin on the left for all direction changes below -45°, in light brown
 				data "< -45°" value: cow_direction_changes count (each < -45) color: rgb(190, 140, 90);
-				// 18 bins of 5° from -45° to 45°, in the cows' brown
-				datalist list<string>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "legend")
-					value: list<int>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "values")
+				// 18 bins of 5° from -45° to 45°, in the cows' brown; the labels are fixed and the counts are 0 while there are no in-range values yet, so the 18 bars exist from the first draw and stay between the two outer bins
+				datalist list<string>(distribution_of([0.0], 18, -45, 45) at "legend")
+					value: empty(cow_direction_changes where (abs(each) <= 45)) ? list_with(18, 0) : list<int>(distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "values")
 					color: list_with(18, rgb(139, 90, 43));
 				// Bin on the right for all direction changes above 45°, in light brown
 				data "> 45°" value: cow_direction_changes count (each > 45) color: rgb(190, 140, 90);
